@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+    <style>
+        .modalButtonC {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 500px;
+            height: 100px;
+            font-size: 16px;
+            margin-right: -50%;
+            transform: translate(-50%, -50%);
+            border-color: #2a921f;
+            box-shadow: 0 0 5px 1px #2a921f;
+        }
+
+        .formBG {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: #00000050;
+        }
+
+        .FormC {
+            background-color: white;
+            width: 400px;
+            height: 400px;
+            margin: auto;
+            text-align: center;
+            border-style: solid;
+            box-shadow: 0 0 5px 1px #2a921f;
+        }
+
+        input:invalid {
+            border-color: red;
+            box-shadow: 0 0 5px 1px red;
+        }
+    </style>
+
+    <h1>Шишенко Валерий Сергеевич - Лабораторная работа №3</h1>
+    <button id="modalButton" class="modalButtonC">Открыть модальное окно</button>
+    <button id="APIButton">Послать запрос</button>
+
+    <div id="modalForm" class="formBG">
+        <div class="FormC">
+            <form method="post" action="/download">
+                <p>Город</p>
+                <input type="text" id="city" required>
+                <p>Дата</p>
+                <input type="date" id="date" required>
+                <p>Количество билетов</p>
+                <input type="number" id="tickets" min="1" max="100" required>
+                <p>Направление</p>
+                <input type="radio" value="В одну сторону" name="direction" id="direction1" required>
+                <label for="direction1">В одну сторону</label>
+                <input type="radio" value="В обе стороны" name="direction" id="direction2" required>
+                <label for="direction2">В обе стороны</label>
+                <p><input id="SendButton" type="submit"></p>
+                <p><button type="button" id="CloseButton">Закрыть</button></p>
+            </form>
+        </div>
+    </div>
+</body>
+
+<script>
+
+    let modalF = document.getElementById("modalForm");
+    document.getElementById("modalButton").onclick = function () {
+        modalF.style.display = "block";
+        document.body.style.overflow = 'hidden';
+    }
+    let closeForm = function (e) {
+        document.body.style.overflow = 'visible';
+        modalF.style.display = "none";
+        return false;
+    }
+    document.getElementById("CloseButton").onclick = closeForm;
+    modalF.onclick = function (e) {
+        if (e && e.target == modalF) {
+            document.body.style.overflow = 'visible';
+            modalF.style.display = "none";
+            return false;
+        }
+
+    };
+    document.getElementById("SendButton").onclick = function (e) {
+
+        if (document.getElementById("direction1").checked)
+            direction = document.getElementById("direction1").value;
+        if (document.getElementById("direction2").checked)
+            direction = document.getElementById("direction2").value;
+
+        if (document.getElementById("city").validity.valid
+            && document.getElementById("date").validity.valid
+            && document.getElementById("tickets").validity.valid
+            && (document.getElementById("direction1").validity.valid
+                || document.getElementById("direction2").validity.valid)) {
+            let formList = {
+                city: document.getElementById("city").value,
+                date: document.getElementById("date").value,
+                tickets: document.getElementById("tickets").value,
+                direction,
+            };
+            console.table(formList);
+            e.preventDefault();
+            return false;
+        }
+    }
+
+    document.getElementById("city").onblur = function (e) {
+        if (document.getElementById("city").validity.typeMismatch) {
+            document.getElementById("city").setCustomValidity("Incorrect type")
+        }
+        else if (document.getElementById("city").validity.valueMissing) {
+            document.getElementById("city").setCustomValidity("Fill out this field")
+        }
+        else {
+            document.getElementById("city").setCustomValidity('');
+        }
+        document.getElementById("city").reportValidity();
+
+    }
+    document.getElementById("date").onblur = function (e) {
+        if (document.getElementById("date").validity.valueMissing) {
+            document.getElementById("date").setCustomValidity("Fill out this field")
+        }
+        else {
+            document.getElementById("date").setCustomValidity('');
+        }
+        document.getElementById("date").reportValidity();
+    }
+    document.getElementById("direction1").onblur = function (e) {
+        if (document.getElementById("direction1").validity.valueMissing) {
+            document.getElementById("direction1").setCustomValidity("Fill out this field")
+        }
+        else {
+            document.getElementById("direction1").setCustomValidity('');
+        }
+        document.getElementById("direction1").reportValidity();
+    }
+    document.getElementById("direction2").onblur = function (e) {
+        if (document.getElementById("direction2").validity.valueMissing) {
+            document.getElementById("direction2").setCustomValidity("Fill out this field")
+        }
+        else {
+            document.getElementById("direction2").setCustomValidity('');
+        }
+        document.getElementById("direction2").reportValidity();
+    }
+    document.getElementById("tickets").onblur = function (e) {
+        if (document.getElementById("tickets").validity.typeMismatch) {
+            document.getElementById("tickets").setCustomValidity("Incorrect type")
+        }
+        else if (document.getElementById("tickets").validity.valueMissing) {
+            document.getElementById("tickets").setCustomValidity("Fill out this field")
+        }
+        else if (document.getElementById("tickets").validity.rangeUnderflow) {
+            document.getElementById("tickets").setCustomValidity("Too small amount of tickets")
+        }
+        else if (document.getElementById("tickets").validity.rangeOverflow) {
+            document.getElementById("tickets").setCustomValidity("Too large amount of tickets")
+        }
+        else {
+            document.getElementById("tickets").setCustomValidity('');
+        }
+        document.getElementById("tickets").reportValidity();
+    }
+
+
+    document.getElementById("APIButton").onclick = async function () {
+        let step1 = fetch('https://animechan.vercel.app/api/quotes')
+        let step2 = step1.then(response => response.json());
+        step2.then(quotes => {
+            console.log(quotes);
+            document.write("<p style=\"font-style: italic; text-align: center;\">QUOTES</p>")
+            for (let i = 0; i < quotes.length; i++)
+                document.write
+                    ('<div style=\"border: 1px solid black; margin: 5px; padding: 0px 20px; font-style: normal;\"><p>Anime: "'
+                        + quotes[i].anime + '"</p><p>Character: ' + quotes[i].character +
+                        '</p><p style=\"font-style: italic;\">' + quotes[i].quote + '</p></div>')
+        });
+        step1.catch(error => alert("Step1 error"));
+        step2.catch(error => alert("Step2 error"));
+        step1.finally(error => alert("Response received successfully"));
+    }
+
+</script>
+
+</html>
